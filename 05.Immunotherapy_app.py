@@ -58,7 +58,7 @@ def get_user_input():
     
     return user_input
     
-st.title("Immunotherapy Prediction")
+st.title("Immunotherapy Predictor")
 st.markdown("<h3 style='font-size: 20px;'>Enter your information below</h3>", unsafe_allow_html=True)
 # Get user inputs
 user_input = get_user_input()
