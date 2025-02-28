@@ -10,6 +10,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import f1_score, confusion_matrix, roc_curve, auc, roc_auc_score, precision_score, recall_score, accuracy_score
+from imblearn.over_sampling import SMOTE
 
 #Loading and describing the data
 data = pd.read_csv('Immunotherapy_dataset.csv')
@@ -27,14 +28,18 @@ scale=StandardScaler()
 X_train = scale.fit_transform(X_train)
 X_test = scale.transform(X_test)
 
+#Oversampling
+smote = SMOTE(random_state=42)
+X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
 #Building Model again with best params
-lr2 = LogisticRegression(C=0.1, class_weight= 'balanced', penalty='l1', solver = 'liblinear')
-lr2.fit(X_train,y_train)
+lr2 = LogisticRegression(C=0.1, penalty='l1', solver = 'liblinear')
+lr2.fit(X_train_resampled,y_train_resampled)
 # predict probabilities on Test and take probability for class 1([:1])
 y_pred_prob_test = lr2.predict_proba(X_test)[:, 1]
 
 # Set a custom threshold
-threshold = 0.54
+threshold = 0.4163
 # Predict labels based on the custom threshold
 y_pred_test_custom_threshold = (y_pred_prob_test >= threshold).astype(int)
 
@@ -70,7 +75,12 @@ if st.button ("Calculate"):
     st.markdown("<h3 style='font-size: 24px; color: #2a7f62;'>Your Results</h3>", unsafe_allow_html=True)
     st.markdown("### The likelihood of response to immune checkpoint blockade therapy:")
     
-    st.markdown(f"<h2 style='font-size: 40px; color: #0d4a40; font-weight: bold; text-align: center;'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
+    if probability_bor_1 [0] >= threshold:
+        color = "#0d4a40"
+    else:
+        color = "#ab270f"
+        
+    st.markdown(f"<h2 style='font-size: 40px; color: {color}; font-weight: bold; text-align: center;'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
     
     st.markdown(f"<p style='font-size: 18px;'>This result is how likely you are to respond to PD-1/PD-L1 immune checkpoint inhibitors. This means that out of 100 NSCLC patients with similar characteristics, approximately {probability_bor_1[0] * 100:.0f} will show an objective response.</p>", unsafe_allow_html=True)
     
