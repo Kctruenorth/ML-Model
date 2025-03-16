@@ -54,7 +54,6 @@ def get_user_input():
 # CSS code
 st.markdown("""
     <style>
-        
         .stButton button {
             background-color: #2a7f62;
             color: white;
@@ -92,9 +91,7 @@ st.markdown("""
             background-color: #f4f4f4;
             border-radius: 10px;
             padding: 20px;
-        }
-        
-        
+        } 
     </style>
 """, unsafe_allow_html=True)
 
