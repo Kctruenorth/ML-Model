@@ -87,10 +87,19 @@ st.markdown("""
         .stImage {
             border-radius: 10px;
         }
+        
+        .stColumn {
+            background-color: #f4f4f4;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='font-size: 40px; color: #2a7f62;'><u>Immunotherapy Response Predictor</u></h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size: 40px; color: white; background-color: #2a7f62; padding: 20px; border-radius: 10px; margin-bottom: 10px;'>Immunotherapy Response Predictor</h1>", unsafe_allow_html=True)
+
 # Split into columns for input and results
 col1, col2 = st.columns(2)
 
@@ -115,10 +124,14 @@ with col2:
             # Set the color based on response
             if probability_bor_1[0] >= threshold:
                 color = "#0d4a40"  # Green for responder
+                image = "responder.jpeg"
+                caption = "Example of an objective response towards ICI"
             else:
                 color = "#ab270f"  # Red for non-responder
+                image = "non_responder.gif"
+                caption = "Example of a non-response towards ICI"
 
             st.markdown(f"<h2 style='font-size: 36px; color: {color};'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
             st.markdown(f"<p style='font-size: 16px;'>This result is how likely you are to respond to PD-1/PD-L1 immune checkpoint inhibitors. This means that out of 100 NSCLC patients with similar characteristics, approximately {probability_bor_1[0] * 100:.0f} will show an objective response.</p>", unsafe_allow_html=True)
-           
+            st.image(image, caption = caption, use_container_width=True)
             st.image("Image1.jpeg", caption="Immunotherapy Benefits", use_container_width=True)
