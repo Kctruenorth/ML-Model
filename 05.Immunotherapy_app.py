@@ -10,12 +10,12 @@ from sklearn.metrics import f1_score, confusion_matrix, roc_curve, auc, roc_auc_
 from imblearn.over_sampling import SMOTE
 import time
 
-# Load and preprocess the data
+# Read CSV file
 data = pd.read_csv('Immunotherapy_dataset.csv')
 data = data.dropna()  # Remove missing values
 
-# Split the data into dependent (X) and independent (y) variables
-y = data.pop("BOR")  # Pops this variable out of the dataset and stores it y
+# Split the data into dependent and independent variables
+y = data.pop("BOR")  # Pops this variable out of the dataset and stores it as independent
 X = data  # The remaining holds the dependent variables
 
 # Split the data using an 80/20 split
@@ -34,7 +34,7 @@ X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 lr2 = LogisticRegression(C=0.1, penalty='l1', solver='liblinear')
 lr2.fit(X_train_resampled, y_train_resampled)
 
-# Set a custom threshold for prediction
+# Ideal threshold determined by model
 threshold = 0.4163
 
 # Function to get user input
@@ -91,7 +91,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<h1 style='font-size: 40px; color: #2a7f62;'><u>Immunotherapy Response Predictor</u></h1>", unsafe_allow_html=True)
-# Layout: Split into columns for input and results
+# Split into columns for input and results
 col1, col2 = st.columns(2)
 
 with col1:
@@ -102,21 +102,21 @@ with col2:
     st.markdown("<h3 style='font-size: 24px;'>Your Results</h3>", unsafe_allow_html=True)
     if st.button("Calculate"):
         with st.spinner('Calculating...'):
-            time.sleep(2)  # Simulate some processing time
+            time.sleep(2)  # Processing time
             # Convert the user input into a pandas DataFrame
             user_input_df = pd.DataFrame([user_input])
 
-            # Scale the user's input to match the model's expected input format
+            # Scale user's input
             user_input_scaled = scale.transform(user_input_df)
 
-            # Predict probability of response to immune therapy
+            # Predict probability of response 
             probability_bor_1 = lr2.predict_proba(user_input_scaled)[:, 1]
            
-            # Set the color based on the threshold
+            # Set the color based on response
             if probability_bor_1[0] >= threshold:
-                color = "#0d4a40"  # Green if predicted response is high
+                color = "#0d4a40"  # Green for responder
             else:
-                color = "#ab270f"  # Red if predicted response is low
+                color = "#ab270f"  # Red for non-responder
 
             st.markdown(f"<h2 style='font-size: 36px; color: {color};'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
             st.markdown(f"<p style='font-size: 16px;'>This result is how likely you are to respond to PD-1/PD-L1 immune checkpoint inhibitors. This means that out of 100 NSCLC patients with similar characteristics, approximately {probability_bor_1[0] * 100:.0f} will show an objective response.</p>", unsafe_allow_html=True)
