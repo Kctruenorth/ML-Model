@@ -1,50 +1,43 @@
-#Import Libraries
 import streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-#Libraries for data visualization
-#We will use sklearn for building logistic regression model
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import f1_score, confusion_matrix, roc_curve, auc, roc_auc_score, precision_score, recall_score, accuracy_score
 from imblearn.over_sampling import SMOTE
+import time
 
-#Loading and describing the data
+# Load and preprocess the data
 data = pd.read_csv('Immunotherapy_dataset.csv')
-data = data.dropna() #Removes missing values
+data = data.dropna()  # Remove missing values
 
-#Split the data into dependent (X) and independent (y) variables
-y = data.pop("BOR") #Pops this variable out of the dataset and stores it y
-X = data #The remaining holds the dependent variables
+# Split the data into dependent (X) and independent (y) variables
+y = data.pop("BOR")  # Pops this variable out of the dataset and stores it y
+X = data  # The remaining holds the dependent variables
 
-#Spliting the data using an 80/20 split
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, train_size = 0.8)
+# Split the data using an 80/20 split
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42, train_size=0.8)
 
-#Feature scaling
-scale=StandardScaler()
+# Feature scaling
+scale = StandardScaler()
 X_train = scale.fit_transform(X_train)
 X_test = scale.transform(X_test)
 
-#Oversampling
+# Oversampling
 smote = SMOTE(random_state=42)
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 
-#Building Model again with best params
-lr2 = LogisticRegression(C=0.1, penalty='l1', solver = 'liblinear')
-lr2.fit(X_train_resampled,y_train_resampled)
-# predict probabilities on Test and take probability for class 1([:1])
-y_pred_prob_test = lr2.predict_proba(X_test)[:, 1]
+# Build Logistic Regression model
+lr2 = LogisticRegression(C=0.1, penalty='l1', solver='liblinear')
+lr2.fit(X_train_resampled, y_train_resampled)
 
-# Set a custom threshold
+# Set a custom threshold for prediction
 threshold = 0.4163
-# Predict labels based on the custom threshold
-y_pred_test_custom_threshold = (y_pred_prob_test >= threshold).astype(int)
 
-#Create the app:
-
+# Function to get user input
 def get_user_input():
     user_input = {}
     user_input['Age'] = st.number_input("What is your Age?", 3, 94)
@@ -55,35 +48,77 @@ def get_user_input():
     user_input['MSI'] = st.slider("What is your Microsatelite Instability (MSI)?", 0.00, 30.00)
     user_input['Pack-year'] = st.slider("What is your Pack-year?", 0.0, 120.0)
     user_input['TMB'] = st.slider("What is your Tumor Mutational Burden (TMB)?", 0.0, 60.0)
-    
+   
     return user_input
-    
-st.title("Immunotherapy Predictor")
-st.markdown("<h3 style='font-size: 20px;'>Enter your information below</h3>", unsafe_allow_html=True)
-# Get user inputs
-user_input = get_user_input()
 
-if st.button ("Calculate"):
-    # Convert the user input into a pandas DataFrame
-    user_input_df = pd.DataFrame([user_input])
-
-    # Scale the user's input to match the model's expected input format
-    user_input_scaled = scale.transform(user_input_df)
-
-    probability_bor_1 = lr2.predict_proba(user_input_scaled)[:, 1]
-    
-    st.markdown("<h3 style='font-size: 24px; color: #2a7f62;'>Your Results</h3>", unsafe_allow_html=True)
-    st.markdown("### The likelihood of response to immune checkpoint blockade therapy:")
-    
-    if probability_bor_1 [0] >= threshold:
-        color = "#0d4a40"
-    else:
-        color = "#ab270f"
+# CSS code
+st.markdown("""
+    <style>
         
-    st.markdown(f"<h2 style='font-size: 40px; color: {color}; font-weight: bold; text-align: center;'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
-    
-    st.markdown(f"<p style='font-size: 18px;'>This result is how likely you are to respond to PD-1/PD-L1 immune checkpoint inhibitors. This means that out of 100 NSCLC patients with similar characteristics, approximately {probability_bor_1[0] * 100:.0f} will show an objective response.</p>", unsafe_allow_html=True)
-    
-    st.markdown("### Check the diagram below for the benefits of immunotherapy over conventional cancer treatments.")
-    
-    st.image("Image1.jpeg", use_container_width=True)
+        .stButton button {
+            background-color: #2a7f62;
+            color: white;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 18px;
+        }
+        .stButton button:hover {
+            background-color: white;
+            color: black;
+        }
+       
+        .stButton button:active {
+            background-color: #2a7f62;
+            color: white
+        }
+       
+        .stSlider>div>div>input {
+            border-radius: 5px;
+        }
+        .stMarkdown h3 {
+            font-size: 20px;
+            color: #2a7f62;
+        }
+        .stMarkdown p {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .stImage {
+            border-radius: 10px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("<h1 style='font-size: 40px; color: #2a7f62;'><u>Immunotherapy Response Predictor</u></h1>", unsafe_allow_html=True)
+# Layout: Split into columns for input and results
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("<h3 style='font-size: 20px;'>Enter your information below</h3>", unsafe_allow_html=True)
+    user_input = get_user_input()
+
+with col2:
+    st.markdown("<h3 style='font-size: 24px;'>Your Results</h3>", unsafe_allow_html=True)
+    if st.button("Calculate"):
+        with st.spinner('Calculating...'):
+            time.sleep(2)  # Simulate some processing time
+            # Convert the user input into a pandas DataFrame
+            user_input_df = pd.DataFrame([user_input])
+
+            # Scale the user's input to match the model's expected input format
+            user_input_scaled = scale.transform(user_input_df)
+
+            # Predict probability of response to immune therapy
+            probability_bor_1 = lr2.predict_proba(user_input_scaled)[:, 1]
+           
+            # Set the color based on the threshold
+            if probability_bor_1[0] >= threshold:
+                color = "#0d4a40"  # Green if predicted response is high
+            else:
+                color = "#ab270f"  # Red if predicted response is low
+
+            st.markdown(f"<h2 style='font-size: 36px; color: {color};'>{probability_bor_1[0] * 100:.2f}%</h2>", unsafe_allow_html=True)
+            st.markdown(f"<p style='font-size: 16px;'>This result is how likely you are to respond to PD-1/PD-L1 immune checkpoint inhibitors. This means that out of 100 NSCLC patients with similar characteristics, approximately {probability_bor_1[0] * 100:.0f} will show an objective response.</p>", unsafe_allow_html=True)
+           
+            st.image("Image1.jpeg", caption="Immunotherapy Benefits", use_container_width=True)
