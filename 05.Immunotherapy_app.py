@@ -204,6 +204,8 @@ elif page == "Dataset":
 
     # Display the dataset
     st.dataframe(data)
+    st.markdown("<p style='font-size: 16px;'>You can also access the dataset in Google Sheets here:</p>", unsafe_allow_html=True)
+    st.markdown("<a href='https://docs.google.com/spreadsheets/d/1vqfxPaw2Ke_pRkGB-VugpPwnej-WlMt6XMRGRLxRV88/edit?gid=1209406464#gid=1209406464' target='_blank'>Click here to open the dataset in Google Sheets</a>", unsafe_allow_html=True)
 
 elif page == "Contribute":
     st.markdown("<h3 style='font-size: 24px;'>Contribute to the database</h3>", unsafe_allow_html=True)
