@@ -163,7 +163,7 @@ st.markdown("""
 st.markdown("<h1 style='font-size: 40px; color: white; background-color: #2a7f62; padding: 20px; border-radius: 10px; margin-bottom: 10px;'>Immunotherapy Response Predictor</h1>", unsafe_allow_html=True)
 
 # Sidebar for navigation
-page = st.sidebar.radio("Select a page", ["Predictor", "Dataset", "Contribute"])
+page = st.sidebar.radio("Select a page", ["Predictor", "Dataset", "Contribute", "Share"])
 
 # Display different content based on the page selected
 if page == "Predictor":
@@ -222,8 +222,15 @@ elif page == "Contribute":
             # Append data to Google Sheets
             append_result = append_to_google_sheet(user_response)
             st.success("Your data has been successfully submitted to the database!")
+
+elif page == "Share":
+    st.markdown("<h3 style='font-size: 24px;'>Share this project with others</h3>", unsafe_allow_html=True)
+    st.write("Scan this QR code to view:")
+    st.image("QR.png", caption="Dark mode not recommended", use_container_width=True)
+
+
     
-    
+
 
     
     
