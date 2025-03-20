@@ -10,14 +10,19 @@ from sklearn.metrics import f1_score, confusion_matrix, roc_curve, auc, roc_auc_
 from imblearn.over_sampling import SMOTE
 import time
 import os
+import json
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 
 SCOPE = ['https://www.googleapis.com/auth/spreadsheets']
 
-SERVICE_ACCOUNT_FILE = "streamlit_key.json"
+# Get credentials from secrets.toml
+google_credentials_json = st.secrets["google_credentials"]["json"]
 
-credentials = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes = SCOPE)
+# Load the credentials as Python dictionary
+credentials_info = json.loads(google_credentials_json)
+
+credentials = Credentials.from_service_account_info(credentials_info, scopes=SCOPE)
 
 service = build("sheets", "v4", credentials = credentials)
 
